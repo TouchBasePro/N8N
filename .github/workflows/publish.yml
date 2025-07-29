@@ -5,9 +5,13 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
-    name: Auto Bump Version & Publish to npm
+    name: Auto Bump Version & Publish
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +21,9 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           fetch-depth: 0
 
+      - name: Pull latest main
+        run: git pull origin main
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -25,7 +32,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
       - name: Build the project
         run: npm run build
 
@@ -34,15 +40,10 @@ jobs:
           git config user.name "ysrajsingh"
           git config user.email "ysgahir1925@hotmail.com"
 
-      - name: Pull latest changes from main
-        run: git pull origin main --rebase
-
       - name: Bump patch version and push tag
         run: |
           npm version patch -m "chore(release): %s [skip ci]"
           git push origin main --follow-tags
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Publish to npm
         run: npm publish --access public
