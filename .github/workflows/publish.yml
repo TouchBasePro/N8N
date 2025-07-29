@@ -7,15 +7,16 @@ on:
 
 jobs:
   publish:
+    name: Auto Bump Version & Publish to npm
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT }}
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -27,12 +28,17 @@ jobs:
       - name: Build the project
         run: npm run build
 
-      - name: Bump patch version and create Git tag
+      - name: Configure Git user
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "ysrajsingh"
+          git config user.email "ysgahir1925@hotmail.com"
+
+      - name: Bump patch version and push tag
+        run: |
           npm version patch -m "chore(release): %s [skip ci]"
           git push origin main --follow-tags
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Publish to npm
         run: npm publish --access public
