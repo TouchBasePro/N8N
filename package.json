@@ -1,6 +1,6 @@
 {
-  "name": "n8n-nodes-touchbasepro",
-  "version": "0.1.0",
+  "name": "@touchbasepro/n8n-nodes-touchbasepro",
+  "version": "0.2.3",
   "description": "Official Touchbase Pro Node for n8n",
   "keywords": [
     "touchbasepro",
@@ -16,14 +16,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/touchbasepro/n8n-nodes-touchbasepro.git"
+    "url": "https://github.com/TouchBasePro/N8N.git"
   },
   "author": {
     "name": "Ysrajsingh",
     "email": "hello@yashrajs.com"
   },
   "bugs": {
-    "url": "https://github.com/touchbasepro/n8n-nodes-touchbasepro/issues"
+    "url": "https://github.com/TouchBasePro/N8N/issues"
   },
   "homepage": "https://www.touchbasepro.io/",
   "engines": {
