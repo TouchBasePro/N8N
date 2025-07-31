@@ -18,7 +18,7 @@ function unwrap<T>(param: any, field: string): T[] {
 }
 
 /**
- * Executes the “Send Smart Email” operation.
+ * Executes the "Send Smart Email" operation.
  */
 export async function sendSmartEmail(
 	this: IExecuteFunctions,
@@ -104,7 +104,7 @@ export async function sendSmartEmail(
 }
 
 /**
- * For dynamic “Template” dropdown.
+ * For dynamic "Template" dropdown.
  */
 export async function getSmartEmailOptions(
 	this: ILoadOptionsFunctions,
@@ -115,13 +115,13 @@ export async function getSmartEmailOptions(
 	let totalPages = 1;
 
 	do {
-		const res = await this.helpers.request({
-			method: 'GET',
-			url: `https://api.touchbasepro.io/email/transactional/smartemails`,
-			qs: { page, pageSize },
-			json: true,
-			auth: await this.getCredentials('touchBaseProApi'),
-		});
+		const res = await touchBaseRequest.call(
+			this,
+			'GET',
+			'/email/transactional/smartemails',
+			{},
+			{ page, pageSize },
+		);
 
 		if (!Array.isArray(res.data)) break;
 		totalPages = res.totalPages || 1;
@@ -138,7 +138,7 @@ export async function getSmartEmailOptions(
 }
 
 /**
- * For dynamic “Merge Field” dropdown (depends on chosen template).
+ * For dynamic "Merge Field" dropdown (depends on chosen template).
  */
 export async function getMergeFieldOptions(
 	this: ILoadOptionsFunctions,
@@ -146,12 +146,11 @@ export async function getMergeFieldOptions(
 	const emailId = this.getCurrentNodeParameter('smartEmailId') as string;
 	if (!emailId) return [];
 
-	const res = await this.helpers.request({
-		method: 'GET',
-		url: `https://api.touchbasepro.io/email/transactional/smartemails/${emailId}`,
-		json: true,
-		auth: await this.getCredentials('touchBaseProApi'),
-	});
+	const res = await touchBaseRequest.call(
+		this,
+		'GET',
+		`/email/transactional/smartemails/${emailId}`,
+	);
 
 	const content = res.htmlContent as string;
 	const ignoreSet = new Set(['if', 'endif', '!mso', 'mso', 'ie']);

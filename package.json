@@ -1,6 +1,6 @@
 {
-  "name": "@touchbasepro/n8n-nodes-touchbasepro",
-  "version": "0.1.6",
+  "name": "n8n-nodes-touchbasepro",
+  "version": "0.2.0",
   "description": "Official Touchbase Pro Node for n8n",
   "keywords": [
     "touchbasepro",
@@ -16,14 +16,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/touchbasepro/n8n-nodes-touchbasepro.git"
+    "url": "https://github.com/TouchBasePro/N8N.git"
   },
   "author": {
     "name": "Ysrajsingh",
     "email": "hello@yashrajs.com"
   },
   "bugs": {
-    "url": "https://github.com/touchbasepro/n8n-nodes-touchbasepro/issues"
+    "url": "https://github.com/TouchBasePro/N8N/issues"
   },
   "homepage": "https://www.touchbasepro.io/",
   "engines": {
@@ -37,15 +37,15 @@
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
   },
-  "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/TouchBaseProApi.credentials.js"
-    ],
-    "nodes": [
-      "dist/nodes/TouchBasePro/TouchBasePro.node.js"
-    ]
-  },
+  	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/TouchBaseProApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/TouchBasePro/TouchBasePro.node.js"
+		]
+	},
   "devDependencies": {
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
