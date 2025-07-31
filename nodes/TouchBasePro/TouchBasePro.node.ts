@@ -25,6 +25,12 @@ import {
 	getSuppressionListOptions,
 	getSuppressionEmailsOptions,
 } from './operations/Suppression';
+import {
+	sendWhatsAppMessage,
+	getWhatsAppTemplateOptions,
+	getTemplateLanguageOptions,
+	getTemplateVariableOptions,
+} from './operations/WhatsApp';
 
 export class TouchBasePro implements INodeType {
 	description: INodeTypeDescription = {
@@ -33,7 +39,7 @@ export class TouchBasePro implements INodeType {
 		icon: 'file:logo.svg',
 		group: ['output'],
 		version: 1,
-		description: 'Interact with TouchBasePro API',
+		description: 'Interact with TouchBasePro API for Email and WhatsApp operations',
 		subtitle: '={{$parameter["operation"] || "Select an Operation"}}',
 		defaults: {
 			name: 'TouchBasePro',
@@ -54,14 +60,12 @@ export class TouchBasePro implements INodeType {
 				noDataExpression: true,
 				typeOptions: { searchable: true },
 				options: [
-					{ name: 'Transactional Email', value: 'transactionalEmail' },
-					{ name: 'List', value: 'list' },
-					{ name: 'Subscriber', value: 'subscriber' },
-					{ name: 'Suppression', value: 'suppression' },
+					{ name: 'Email', value: 'email' },
+					{ name: 'WhatsApp', value: 'whatsapp' },
 				],
-				default: 'transactionalEmail',
+				default: 'email',
 			},
-			// Operation for Transactional Email Actions
+			// Operation for Email Actions
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -69,216 +73,33 @@ export class TouchBasePro implements INodeType {
 				noDataExpression: true,
 				typeOptions: { searchable: true },
 				displayOptions: {
-					show: { resource: ['transactionalEmail'] },
+					show: { resource: ['email'] },
 				},
 				options: [
 					{
 						name: 'Send Transactional Smart Email',
 						value: 'sendSmartEmail',
-						action: 'Send transactional smart email a transactional email',
+						action: 'Send transactional smart email',
 					},
-				],
-				default: 'sendSmartEmail', // No automatic selection
-			},
-			// Operation for Subscriber Actions (moved from List)
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				typeOptions: { searchable: true },
-				displayOptions: {
-					show: { resource: ['subscriber'] },
-				},
-				options: [
+					{
+						name: 'Create List',
+						value: 'createList',
+						action: 'Create list',
+					},
 					{
 						name: 'Add/Update Subscriber',
 						value: 'addOrUpdateSubscriber',
-						action: 'Add update subscriber a subscriber',
+						action: 'Add update subscriber',
 					},
-				],
-				default: 'addOrUpdateSubscriber',
-			},
-			{
-				displayName: 'List Name or ID',
-				name: 'listId',
-				type: 'options',
-				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-				typeOptions: {
-					loadOptionsMethod: 'getListOptions',
-					searchable: true,
-					refreshOnChange: true,
-				},
-				default: '',
-				required: true,
-				displayOptions: {
-					show: { resource: ['subscriber'], operation: ['addOrUpdateSubscriber'] },
-				},
-			},
-			{
-				displayName: 'Action',
-				name: 'subOperation',
-				type: 'options',
-				options: [
-					{ name: 'Add', value: 'add' },
-					{ name: 'Update', value: 'update' },
-				],
-				default: 'add',
-				displayOptions: {
-					show: { resource: ['subscriber'], operation: ['addOrUpdateSubscriber'] },
-				},
-			},
-			// Then fields for add vs. update:
-			{
-				displayName: 'Email',
-				name: 'email',
-				type: 'string',
-				placeholder: 'name@email.com',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-						subOperation: ['add'],
-					},
-				},
-			},
-			{
-				displayName: 'Current Email Name or ID',
-				name: 'currentEmail',
-				type: 'options',
-				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-				typeOptions: {
-					loadOptionsMethod: 'getSubscriberOptions',
-					loadOptionsDependsOn: ['listId'],
-					searchable: true,
-				},
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-						subOperation: ['update'],
-					},
-				},
-			},
-			{
-				displayName: 'New Email',
-				name: 'email',
-				type: 'string',
-				placeholder: 'name@email.com',
-				default: '',
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-						subOperation: ['update'],
-					},
-				},
-			},
-			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-			},
-			{
-				displayName: 'Re‑subscribe',
-				name: 'reSubscribe',
-				type: 'boolean',
-				default: true,
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-			},
-			{
-				displayName: 'Consent To Track',
-				name: 'consentToTrack',
-				type: 'boolean',
-				default: true,
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-			},
-			{
-				displayName: 'Status',
-				name: 'status',
-				type: 'options',
-				options: [
-					{ name: 'Active', value: 'Active' },
-					{ name: 'Bounced', value: 'Bounced' },
-					{ name: 'Deleted', value: 'Deleted' },
-					{ name: 'Unconfirmed', value: 'Unconfirmed' },
-					{ name: 'Unsubscribed', value: 'Unsubscribed' },
-				],
-				default: 'Active',
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-			},
-			{
-				displayName: 'Custom Fields',
-				name: 'customFields',
-				type: 'fixedCollection',
-				typeOptions: { multipleValues: true },
-				displayOptions: {
-					show: {
-						resource: ['subscriber'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-				default: {},
-				options: [
 					{
-						displayName: 'Field',
-						name: 'field',
-						values: [
-							{
-								displayName: 'Field Name or ID',
-								name: 'fieldMeta',
-								type: 'options',
-								description:
-									'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-								typeOptions: {
-									loadOptionsMethod: 'getCustomFields',
-									loadOptionsDependsOn: ['listId'],
-								},
-								default: '',
-							},
-							{
-								displayName: 'Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description:
-									"Enter the value for the selected field (format must match the field's type)",
-							},
-						],
+						name: 'Add Email(s) to Suppression List',
+						value: 'addToSuppressionList',
+						action: 'Add email s to suppression list',
 					},
 				],
+				default: 'sendSmartEmail',
 			},
-
-			// Operation for Suppression Actions (commented out)
+			// Operation for WhatsApp Actions
 			{
 				displayName: 'Operation',
 				name: 'operation',
@@ -286,44 +107,18 @@ export class TouchBasePro implements INodeType {
 				noDataExpression: true,
 				typeOptions: { searchable: true },
 				displayOptions: {
-					show: { resource: ['suppression'] },
+					show: { resource: ['whatsapp'] },
 				},
 				options: [
 					{
-						name: 'Add Email(s) to Suppression List',
-						value: 'addToSuppressionList',
-						action: 'Add email s to suppression list a suppression',
+						name: 'Send Message',
+						value: 'sendWhatsAppMessage',
+						action: 'Send a whatsapp message',
 					},
 				],
-				default: 'addToSuppressionList',
+				default: 'sendWhatsAppMessage',
 			},
-			{
-				displayName: 'Emails to Suppress',
-				name: 'suppressionEmails',
-				type: 'fixedCollection',
-				typeOptions: { multipleValues: true },
-				default: { emails: [{ email: '' }] },
-				required: true,
-				description: 'Add one or more email addresses to suppress',
-				displayOptions: {
-					show: { resource: ['suppression'], operation: ['addToSuppressionList'] },
-				},
-				options: [
-					{
-						name: 'emails',
-						displayName: 'Emails',
-						values: [
-							{
-								displayName: 'Email',
-								name: 'email',
-								type: 'string',
-								placeholder: 'name@email.com',
-								default: '',
-							},
-						],
-					},
-				],
-			},
+			// Email Operations Fields
 			// Smart Email Template dropdown
 			{
 				displayName: 'Smart Email Template Name or ID',
@@ -335,7 +130,7 @@ export class TouchBasePro implements INodeType {
 				},
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -352,7 +147,7 @@ export class TouchBasePro implements INodeType {
 				typeOptions: { multipleValues: true },
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -382,7 +177,7 @@ export class TouchBasePro implements INodeType {
 				typeOptions: { multipleValues: true },
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -412,7 +207,7 @@ export class TouchBasePro implements INodeType {
 				typeOptions: { multipleValues: true },
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -442,7 +237,7 @@ export class TouchBasePro implements INodeType {
 				typeOptions: { multipleValues: true },
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -472,7 +267,7 @@ export class TouchBasePro implements INodeType {
 				typeOptions: { multipleValues: true },
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -511,7 +306,7 @@ export class TouchBasePro implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -523,7 +318,7 @@ export class TouchBasePro implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
@@ -535,31 +330,20 @@ export class TouchBasePro implements INodeType {
 				type: 'boolean',
 				displayOptions: {
 					show: {
-						resource: ['transactionalEmail'],
+						resource: ['email'],
 						operation: ['sendSmartEmail'],
 					},
 				},
 				default: true,
 			},
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				typeOptions: { searchable: true },
-				displayOptions: {
-					show: { resource: ['list'] },
-				},
-				options: [{ name: 'Create List', value: 'createList', action: 'Create list a list' }],
-				default: 'createList',
-			},
+			// List creation fields
 			{
 				displayName: 'List Name',
 				name: 'listName',
 				type: 'string',
 				required: true,
 				displayOptions: {
-					show: { resource: ['list'], operation: ['createList'] },
+					show: { resource: ['email'], operation: ['createList'] },
 				},
 				default: '',
 			},
@@ -569,7 +353,7 @@ export class TouchBasePro implements INodeType {
 				type: 'fixedCollection',
 				typeOptions: { multipleValues: true },
 				displayOptions: {
-					show: { resource: ['list'], operation: ['createList'] },
+					show: { resource: ['email'], operation: ['createList'] },
 				},
 				default: {},
 				options: [
@@ -642,6 +426,355 @@ export class TouchBasePro implements INodeType {
 					},
 				],
 			},
+			// Subscriber fields
+			{
+				displayName: 'List Name or ID',
+				name: 'listId',
+				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				typeOptions: {
+					loadOptionsMethod: 'getListOptions',
+					searchable: true,
+					refreshOnChange: true,
+				},
+				default: '',
+				required: true,
+				displayOptions: {
+					show: { resource: ['email'], operation: ['addOrUpdateSubscriber'] },
+				},
+			},
+			{
+				displayName: 'Action',
+				name: 'subOperation',
+				type: 'options',
+				options: [
+					{ name: 'Add', value: 'add' },
+					{ name: 'Update', value: 'update' },
+				],
+				default: 'add',
+				displayOptions: {
+					show: { resource: ['email'], operation: ['addOrUpdateSubscriber'] },
+				},
+			},
+			// Then fields for add vs. update:
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+						subOperation: ['add'],
+					},
+				},
+			},
+			{
+				displayName: 'Current Email Name or ID',
+				name: 'currentEmail',
+				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				typeOptions: {
+					loadOptionsMethod: 'getSubscriberOptions',
+					loadOptionsDependsOn: ['listId'],
+					searchable: true,
+				},
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+						subOperation: ['update'],
+					},
+				},
+			},
+			{
+				displayName: 'New Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+						subOperation: ['update'],
+					},
+				},
+			},
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+					},
+				},
+			},
+			{
+				displayName: 'Re‑subscribe',
+				name: 'reSubscribe',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+					},
+				},
+			},
+			{
+				displayName: 'Consent To Track',
+				name: 'consentToTrack',
+				type: 'boolean',
+				default: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+					},
+				},
+			},
+			{
+				displayName: 'Status',
+				name: 'status',
+				type: 'options',
+				options: [
+					{ name: 'Active', value: 'Active' },
+					{ name: 'Bounced', value: 'Bounced' },
+					{ name: 'Deleted', value: 'Deleted' },
+					{ name: 'Unconfirmed', value: 'Unconfirmed' },
+					{ name: 'Unsubscribed', value: 'Unsubscribed' },
+				],
+				default: 'Active',
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+					},
+				},
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['addOrUpdateSubscriber'],
+					},
+				},
+				default: {},
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Name or ID',
+								name: 'fieldMeta',
+								type: 'options',
+								description:
+									'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+								typeOptions: {
+									loadOptionsMethod: 'getCustomFields',
+									loadOptionsDependsOn: ['listId'],
+								},
+								default: '',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description:
+									"Enter the value for the selected field (format must match the field's type)",
+							},
+						],
+					},
+				],
+			},
+			// Suppression fields
+			{
+				displayName: 'Emails to Suppress',
+				name: 'suppressionEmails',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				default: { emails: [{ email: '' }] },
+				required: true,
+				description: 'Add one or more email addresses to suppress',
+				displayOptions: {
+					show: { resource: ['email'], operation: ['addToSuppressionList'] },
+				},
+				options: [
+					{
+						name: 'emails',
+						displayName: 'Emails',
+						values: [
+							{
+								displayName: 'Email',
+								name: 'email',
+								type: 'string',
+								placeholder: 'name@email.com',
+								default: '',
+							},
+						],
+					},
+				],
+			},
+			// WhatsApp Message Properties
+			{
+				displayName: 'Country Code',
+				name: 'countryCode',
+				type: 'string',
+				placeholder: '+1',
+				default: '',
+				required: true,
+				description: 'The country code for the phone number (e.g., +91 for India)',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Phone Number',
+				name: 'phoneNumber',
+				type: 'string',
+				placeholder: '9999999999',
+				default: '',
+				required: true,
+				description: 'The phone number without country code',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Message Type',
+				name: 'messageType',
+				type: 'options',
+				options: [
+					{ name: 'Text Message', value: 'text' },
+					{ name: 'Template Message', value: 'template' },
+				],
+				default: 'template',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Message',
+				name: 'message',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				required: true,
+				description: 'The message content to send',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageType: ['text'],
+					},
+				},
+			},
+			{
+				displayName: 'Template Name or ID',
+				name: 'templateName',
+				type: 'options',
+				description:
+					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				typeOptions: {
+					loadOptionsMethod: 'getWhatsAppTemplateOptions',
+					searchable: true,
+				},
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageType: ['template'],
+					},
+				},
+			},
+			{
+				displayName: 'Template Language Name or ID',
+				name: 'templateLanguage',
+				type: 'options',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				typeOptions: {
+					loadOptionsMethod: 'getTemplateLanguageOptions',
+				},
+				default: '',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageType: ['template'],
+					},
+				},
+			},
+			{
+				displayName: 'Template Variables',
+				name: 'variables',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageType: ['template'],
+					},
+				},
+				default: {},
+				options: [
+					{
+						name: 'variable',
+						displayName: 'Variable',
+						values: [
+							{
+								displayName: 'Variable Name or ID',
+								name: 'name',
+								type: 'options',
+								typeOptions: {
+									loadOptionsMethod: 'getTemplateVariableOptions',
+									loadOptionsDependsOn: ['templateName'],
+								},
+								default: '',
+								description: 'The variable name as defined in the template. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+							},
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value to replace the variable with',
+							},
+						],
+					},
+				],
+			},
 		],
 	};
 
@@ -651,17 +784,14 @@ export class TouchBasePro implements INodeType {
 
 		// Mapping of category and operation to functions
 		const operationFunctionMap: { [key: string]: { [key: string]: Function } } = {
-			transactionalEmail: {
+			email: {
 				sendSmartEmail: sendSmartEmail,
-			},
-			subscriber: {
-				addOrUpdateSubscriber: addOrUpdateSubscriber,
-			},
-			list: {
 				createList: createList,
-			},
-			suppression: {
+				addOrUpdateSubscriber: addOrUpdateSubscriber,
 				addToSuppressionList: addToSuppressionList,
+			},
+			whatsapp: {
+				sendWhatsAppMessage: sendWhatsAppMessage,
 			},
 		};
 
@@ -694,6 +824,9 @@ export class TouchBasePro implements INodeType {
 			getSubscriberOptions,
 			getSuppressionListOptions,
 			getSuppressionEmailsOptions,
+			getWhatsAppTemplateOptions,
+			getTemplateLanguageOptions,
+			getTemplateVariableOptions,
 		},
 	};
 }

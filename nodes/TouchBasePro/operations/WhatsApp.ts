@@ -19,6 +19,18 @@ function unwrap<T>(param: any, field: string): T[] {
 }
 
 /**
+ * Helper to create full phone number from country code and phone number
+ */
+function createFullPhoneNumber(countryCode: string, phoneNumber: string): string {
+	// Clean the inputs
+	const cleanCountryCode = countryCode.replace(/[^\d+]/g, '');
+	const cleanPhoneNumber = phoneNumber.replace(/[^\d]/g, '');
+	
+	// Create full phone number (country code without + + phone number)
+	return cleanCountryCode.replace(/^\+/, '') + cleanPhoneNumber;
+}
+
+/**
  * Executes the "Send WhatsApp Message" operation.
  */
 export async function sendWhatsAppMessage(
@@ -26,6 +38,7 @@ export async function sendWhatsAppMessage(
 	index: number,
 ): Promise<IDataObject> {
 	// 1) Parameters
+	const countryCode = this.getNodeParameter('countryCode', index) as string;
 	const phoneNumber = this.getNodeParameter('phoneNumber', index) as string;
 	const messageType = this.getNodeParameter('messageType', index) as string;
 	const message = this.getNodeParameter('message', index, '') as string;
@@ -38,10 +51,11 @@ export async function sendWhatsAppMessage(
 		'variable',
 	);
 
-	// 2) Build request body
-	const body: IDataObject = {
-		phoneNumber,
-	};
+	// 2) Create full phone number
+	const fullPhoneNumber = createFullPhoneNumber(countryCode, phoneNumber);
+
+	// 3) Build request body
+	const body: IDataObject = {};
 
 	// Handle different message types
 	if (messageType === 'text') {
@@ -50,30 +64,33 @@ export async function sendWhatsAppMessage(
 				itemIndex: index,
 			});
 		}
-		body.message = message;
+		body.fullPhoneNumber = fullPhoneNumber;
+		body.type = 'Text';
+		body.data = {
+			message: message,
+		};
 	} else if (messageType === 'template') {
 		if (!templateName) {
 			throw new NodeOperationError(this.getNode(), 'Template name is required for template messages', {
 				itemIndex: index,
 			});
 		}
-		body.templateName = templateName;
-		body.templateLanguage = templateLanguage;
 		
-		// Add template variables if provided
-		if (variables.length) {
-			body.variables = variables.reduce((obj, variable) => {
-				obj[variable.name] = variable.value;
-				return obj;
-			}, {} as IDataObject);
-		}
+		body.fullPhoneNumber = fullPhoneNumber;
+		body.callbackData = 'n8n_whatsapp_message';
+		body.type = 'Template';
+		body.template = {
+			name: templateName,
+			languageCode: templateLanguage,
+			bodyValues: variables.map(v => v.value),
+		};
 	}
 
-	// 3) Call TouchBasePro API
+	// 4) Call TouchBasePro API
 	return await touchBaseWhatsAppRequest.call(
 		this,
 		'POST',
-		'/whatsapp/messages',
+		'/message/',
 		body,
 	);
 }

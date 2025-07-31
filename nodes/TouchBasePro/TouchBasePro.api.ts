@@ -12,8 +12,8 @@ export async function touchBaseRequest(
 		method,
 		url: `https://api.touchbasepro.io${endpoint}`,
 		auth: {
-			user: credentials.username as string,
-			pass: credentials.password as string,
+			user: credentials.emailApiKey as string,
+			pass: 'test1234',
 		},
 		json: true,
 		body,
@@ -28,12 +28,12 @@ export async function touchBaseWhatsAppRequest(
 	body: IDataObject = {},
 	query: IDataObject = {},
 ): Promise<any> {
-	const credentials = await this.getCredentials('touchBaseProWhatsAppApi');
+	const credentials = await this.getCredentials('touchBaseProApi');
 	return this.helpers.request({
 		method,
 		url: `https://api.whatsappbiz.com/v1/public${endpoint}`,
 		headers: {
-			'Authorization': `Bearer ${credentials.apiKey as string}`,
+			'Authorization': `Basic ${credentials.whatsappApiKey as string}`,
 		},
 		json: true,
 		body,
@@ -48,12 +48,12 @@ export async function interaktWhatsAppRequest(
 	body: IDataObject = {},
 	query: IDataObject = {},
 ): Promise<any> {
-	const credentials = await this.getCredentials('touchBaseProWhatsAppApi');
+	const credentials = await this.getCredentials('touchBaseProApi');
 	const requestOptions: IHttpRequestOptions = {
 		method,
 		url: `https://api.interakt.ai/v1/public${endpoint}`,
 		headers: {
-			'Authorization': `Basic ${credentials.apiKey as string}`,
+			'Authorization': `Basic ${credentials.whatsappApiKey as string}`,
 			'Content-Type': 'application/json',
 		},
 		json: true,

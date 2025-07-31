@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-touchbasepro",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Official Touchbase Pro Node for n8n",
   "keywords": [
     "touchbasepro",
@@ -40,12 +40,10 @@
   	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"credentials": [
-			"dist/credentials/TouchBaseProApi.credentials.js",
-			"dist/credentials/TouchBaseProWhatsAppApi.credentials.js"
+			"dist/credentials/TouchBaseProApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/TouchBasePro/TouchBasePro.node.js",
-			"dist/nodes/TouchBasePro/TouchBaseProWhatsApp.node.js"
+			"dist/nodes/TouchBasePro/TouchBasePro.node.js"
 		]
 	},
   "devDependencies": {

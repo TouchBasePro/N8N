@@ -24,44 +24,29 @@ npm install n8n-nodes-touchbasepro
 
 ## Operations
 
-This package includes two nodes:
+This package includes one combined node that supports both Email and WhatsApp operations:
 
-## TouchBasePro (Email Operations)
+## TouchBasePro (Combined Email & WhatsApp Operations)
 Supports the following resources and operations:
 
-### Transactional Email
+### Email
 - **Send Transactional Smart Email**: Send a transactional email using a Smart Email template, with support for recipients, CC, BCC, attachments, merge fields, and tracking options.
-
-### List
 - **Create List**: Create a new email list with custom fields and welcome email options.
-
-### Subscriber
-- **Add or Update Subscriber**: Add a new subscriber or update an existing one in a list, including custom fields.
-
-### Suppression
+- **Add/Update Subscriber**: Add a new subscriber or update an existing one in a list, including custom fields.
 - **Add Email(s) to Suppression List**: Add one or more emails to the suppression list for a client.
-
-## TouchBasePro WhatsApp
-Supports the following operations:
 
 ### WhatsApp
 - **Send Message**: Send a WhatsApp message with support for both text messages and template-based messages with variables.
 
 ## Credentials
 
-This node requires different TouchBasePro API credentials based on the resource you're using:
+This node requires TouchBasePro API credentials:
 
-### Email Operations (Transactional Email, List, Subscriber, Suppression)
-- **Credential Type**: `TouchBasePro API`
-- **Username**: Your TouchBasePro account username for email operations.
-- **Password**: Your TouchBasePro account password for email operations.
+### TouchBasePro API
+- **Email API Key**: Your TouchBasePro API key for email operations.
+- **WhatsApp API Key**: Your TouchBasePro API key for WhatsApp operations.
 
-### WhatsApp Operations
-- **Credential Type**: `TouchBasePro WhatsApp API`
-- **API Key**: Your TouchBasePro api key for WhatsApp operations.
-
-
-Set up your credentials in n8n by creating the appropriate credential type based on the operations you plan to use.
+Both API keys are configured in a single credential type for easy management.
 
 ## Compatibility
 
@@ -71,17 +56,12 @@ Set up your credentials in n8n by creating the appropriate credential type based
 
 ## Usage
 
-### TouchBasePro (Email Operations)
-- Add the TouchBasePro node to your workflow and select the desired resource and operation.
-- Configure `TouchBasePro API` credentials for all email operations.
+### TouchBasePro (Combined Operations)
+- Add the TouchBasePro node to your workflow and select the desired resource (Email or WhatsApp).
+- Configure `TouchBasePro API` credentials with both your Email API Key and WhatsApp API Key.
 - Configure the required fields and map data as needed.
 - For sending emails, ensure you have a Smart Email template set up in TouchBasePro.
 - For list and subscriber management, ensure you have the correct list IDs and custom fields configured.
-
-### TouchBasePro WhatsApp
-- Add the TouchBasePro WhatsApp node to your workflow and select the desired operation.
-- Configure `TouchBasePro WhatsApp API` credentials for WhatsApp operations.
-- Configure the required fields and map data as needed.
 - For sending WhatsApp messages, ensure you have the correct phone number format (with country code) and template setup if using template-based messages.
 
 ## Resources
@@ -91,6 +71,7 @@ Set up your credentials in n8n by creating the appropriate credential type based
 
 ## Version history
 
+- 0.2.0: Simplified to two resources (Email and WhatsApp) with single credential type and combined operations.
 - 0.1.0: Initial release with support for transactional emails, WhatsApp messaging, list management, subscribers, and suppression lists. Includes separate nodes for email and WhatsApp operations.
 
 ---
