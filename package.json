@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-touchbasepro",
+  "name": "@touchbasepro/n8n-nodes-touchbasepro",
   "version": "0.2.2",
   "description": "Official Touchbase Pro Node for n8n",
   "keywords": [
