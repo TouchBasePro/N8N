@@ -31,6 +31,11 @@ import {
 	getTemplateLanguageOptions,
 	getTemplateVariableOptions,
 } from './operations/WhatsApp';
+import {
+	getBalance,
+	sendBulkMessages,
+	generateAuthToken,
+} from './operations/SMS';
 
 export class TouchBasePro implements INodeType {
 	description: INodeTypeDescription = {
@@ -62,6 +67,7 @@ export class TouchBasePro implements INodeType {
 				options: [
 					{ name: 'Email', value: 'email' },
 					{ name: 'WhatsApp', value: 'whatsapp' },
+					{ name: 'SMS', value: 'sms' },
 				],
 				default: 'email',
 			},
@@ -117,6 +123,34 @@ export class TouchBasePro implements INodeType {
 					},
 				],
 				default: 'sendWhatsAppMessage',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				typeOptions: { searchable: true },
+				displayOptions: {
+					show: { resource: ['sms'] },
+				},
+				options: [
+					{
+						name: 'Get Balance',
+						value: 'getBalance',
+						action: 'Get account balance',
+					},
+					{
+						name: 'Send Bulk Messages',
+						value: 'sendBulkMessages',
+						action: 'Send multiple SMS messages',
+					},
+					{
+						name: 'Generate Authentication Token',
+						value: 'generateAuthToken',
+						action: 'Generate authentication token',
+					},
+				],
+				default: 'getBalance',
 			},
 			// Email Operations Fields
 			// Smart Email Template dropdown
@@ -775,6 +809,55 @@ export class TouchBasePro implements INodeType {
 					},
 				],
 			},
+			// SMS Message Properties
+			{
+				displayName: 'Messages',
+				name: 'messages',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				displayOptions: {
+					show: {
+						resource: ['sms'],
+						operation: ['sendBulkMessages'],
+					},
+				},
+				default: {},
+				options: [
+					{
+						name: 'message',
+						displayName: 'Message',
+						values: [
+							{
+								displayName: 'Phone Number',
+								name: 'phoneNumber',
+								type: 'string',
+								placeholder: '+1234567890',
+								default: '',
+								required: true,
+								description: 'The phone number to send the SMS to',
+							},
+							{
+								displayName: 'Message',
+								name: 'message',
+								type: 'string',
+								typeOptions: {
+									rows: 4,
+								},
+								default: '',
+								required: true,
+								description: 'The SMS message content',
+							},
+							{
+								displayName: 'Sender ID',
+								name: 'senderId',
+								type: 'string',
+								default: '',
+								description: 'Optional sender ID for the SMS',
+							},
+						],
+					},
+				],
+			},
 		],
 	};
 
@@ -792,6 +875,11 @@ export class TouchBasePro implements INodeType {
 			},
 			whatsapp: {
 				sendWhatsAppMessage: sendWhatsAppMessage,
+			},
+			sms: {
+				getBalance: getBalance,
+				sendBulkMessages: sendBulkMessages,
+				generateAuthToken: generateAuthToken,
 			},
 		};
 

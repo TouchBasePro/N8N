@@ -38,6 +38,11 @@ Supports the following resources and operations:
 ### WhatsApp
 - **Send Message**: Send a WhatsApp message with support for both text messages and template-based messages with variables.
 
+### SMS
+- **Get Balance**: Retrieve your account balance from MyMobileAPI.
+- **Send Bulk Messages**: Send multiple SMS messages to different phone numbers.
+- **Generate Authentication Token**: Generate an authentication token based on basic authorization.
+
 ## Credentials
 
 This node requires TouchBasePro API credentials:
@@ -45,8 +50,10 @@ This node requires TouchBasePro API credentials:
 ### TouchBasePro API
 - **Email API Key**: Your TouchBasePro API key for email operations.
 - **WhatsApp API Key**: Your TouchBasePro API key for WhatsApp operations.
+- **SMS Username**: Your MyMobileAPI username for SMS operations.
+- **SMS Password**: Your MyMobileAPI password for SMS operations.
 
-Both API keys are configured in a single credential type for easy management.
+All API keys and credentials are configured in a single credential type for easy management.
 
 ## Compatibility
 
@@ -57,12 +64,13 @@ Both API keys are configured in a single credential type for easy management.
 ## Usage
 
 ### TouchBasePro (Combined Operations)
-- Add the TouchBasePro node to your workflow and select the desired resource (Email or WhatsApp).
-- Configure `TouchBasePro API` credentials with both your Email API Key and WhatsApp API Key.
+- Add the TouchBasePro node to your workflow and select the desired resource (Email, WhatsApp, or SMS).
+- Configure `TouchBasePro API` credentials with your Email API Key, WhatsApp API Key, SMS Username, and SMS Password.
 - Configure the required fields and map data as needed.
 - For sending emails, ensure you have a Smart Email template set up in TouchBasePro.
 - For list and subscriber management, ensure you have the correct list IDs and custom fields configured.
 - For sending WhatsApp messages, ensure you have the correct phone number format (with country code) and template setup if using template-based messages.
+- For SMS operations, ensure you have valid MyMobileAPI credentials and phone numbers in the correct format.
 
 ## Resources
 

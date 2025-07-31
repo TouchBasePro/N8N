@@ -21,6 +21,21 @@ export class TouchBaseProApi implements ICredentialType {
 			default: '',
 			description: 'API key for TouchBasePro WhatsApp operations',
 		},
+		{
+			displayName: 'SMS Username',
+			name: 'smsUsername',
+			type: 'string',
+			default: '',
+			description: 'Username for SMS operations',
+		},
+		{
+			displayName: 'SMS Password',
+			name: 'smsPassword',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			description: 'Password for SMS operations',
+		},
 	];
 	documentationUrl = 'https://developer.touchbasepro.com/';
 }

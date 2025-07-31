@@ -66,3 +66,24 @@ export async function interaktWhatsAppRequest(
 	
 	return this.helpers.request(requestOptions);
 }
+
+export async function touchBaseSmsRequest(
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	body: IDataObject = {},
+	query: IDataObject = {},
+): Promise<any> {
+	const credentials = await this.getCredentials('touchBaseProApi');
+	return this.helpers.request({
+		method,
+		url: `https://rest.mymobileapi.com${endpoint}`,
+		auth: {
+			username: credentials.smsUsername as string,
+			password: credentials.smsPassword as string,
+		},
+		json: true,
+		body,
+		qs: query,
+	});
+}
