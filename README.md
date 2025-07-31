@@ -2,7 +2,7 @@
 
 This is an n8n community node. It lets you use TouchBasePro in your n8n workflows.
 
-TouchBasePro is an email marketing and transactional email platform for sending, managing, and tracking emails at scale.
+TouchBasePro is an email marketing, transactional email, and WhatsApp messaging platform for sending, managing, and tracking communications at scale.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -24,27 +24,36 @@ npm install n8n-nodes-touchbasepro
 
 ## Operations
 
-This node supports the following resources and operations:
+This package includes one combined node that supports both Email and WhatsApp operations:
 
-### Transactional Email
+## TouchBasePro (Combined Email & WhatsApp Operations)
+Supports the following resources and operations:
+
+### Email
 - **Send Transactional Smart Email**: Send a transactional email using a Smart Email template, with support for recipients, CC, BCC, attachments, merge fields, and tracking options.
-
-### List
 - **Create List**: Create a new email list with custom fields and welcome email options.
-
-### Subscriber
-- **Add or Update Subscriber**: Add a new subscriber or update an existing one in a list, including custom fields.
-
-### Suppression
+- **Add/Update Subscriber**: Add a new subscriber or update an existing one in a list, including custom fields.
 - **Add Email(s) to Suppression List**: Add one or more emails to the suppression list for a client.
+
+### WhatsApp
+- **Send Message**: Send a WhatsApp message with support for both text messages and template-based messages with variables.
+
+### SMS
+- **Get Balance**: Retrieve your account balance from MyMobileAPI.
+- **Send Bulk Messages**: Send multiple SMS messages to different phone numbers.
+- **Generate Authentication Token**: Generate an authentication token based on basic authorization.
 
 ## Credentials
 
 This node requires TouchBasePro API credentials:
-- **Username**: Your TouchBasePro account username.
-- **Password**: Your TouchBasePro account password.
 
-Set up your credentials in n8n by creating a new credential of type `TouchBasePro API` and entering your username and password.
+### TouchBasePro API
+- **Email API Key**: Your TouchBasePro API key for email operations.
+- **WhatsApp API Key**: Your TouchBasePro API key for WhatsApp operations.
+- **SMS Username**: Your MyMobileAPI username for SMS operations.
+- **SMS Password**: Your MyMobileAPI password for SMS operations.
+
+All API keys and credentials are configured in a single credential type for easy management.
 
 ## Compatibility
 
@@ -54,10 +63,14 @@ Set up your credentials in n8n by creating a new credential of type `TouchBasePr
 
 ## Usage
 
-- Add the TouchBasePro node to your workflow and select the desired resource and operation.
+### TouchBasePro (Combined Operations)
+- Add the TouchBasePro node to your workflow and select the desired resource (Email, WhatsApp, or SMS).
+- Configure `TouchBasePro API` credentials with your Email API Key, WhatsApp API Key, SMS Username, and SMS Password.
 - Configure the required fields and map data as needed.
 - For sending emails, ensure you have a Smart Email template set up in TouchBasePro.
 - For list and subscriber management, ensure you have the correct list IDs and custom fields configured.
+- For sending WhatsApp messages, ensure you have the correct phone number format (with country code) and template setup if using template-based messages.
+- For SMS operations, ensure you have valid MyMobileAPI credentials and phone numbers in the correct format.
 
 ## Resources
 
@@ -66,7 +79,8 @@ Set up your credentials in n8n by creating a new credential of type `TouchBasePr
 
 ## Version history
 
-- 0.1.0: Initial release with support for transactional emails, list management, subscribers, and suppression lists.
+- 0.2.0: Simplified to two resources (Email and WhatsApp) with single credential type and combined operations.
+- 0.1.0: Initial release with support for transactional emails, WhatsApp messaging, list management, subscribers, and suppression lists. Includes separate nodes for email and WhatsApp operations.
 
 ---
 

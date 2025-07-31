@@ -1,0 +1,50 @@
+name: Auto Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    name: Auto Bump Version & Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+
+      - name: Pull latest main
+        run: git pull origin main
+
+      - name: Configure Git user
+        run: |
+          git config user.name "ysrajsingh"
+          git config user.email "ysgahir1925@hotmail.com"
+
+      - name: Bump patch version & push tag
+        run: |
+          npm version patch -m "chore(release): %s [skip ci]"
+          git push origin main --follow-tags
+
+      - name: Set up Node.js and install dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -26,7 +26,7 @@ export async function getCustomFields(
 		for (const field of fields) {
 			options.push({
 				name: `${field.name}`,
-				value: `${field.code}::${field.type}`,
+				value: `${field.name}::${field.type}`,
 			});
 		}
 		page++;
@@ -82,9 +82,9 @@ export async function addOrUpdateSubscriber(
 	const customFieldsInput = cfCollection.field || [];
 
 	const customFields = customFieldsInput.map(entry => {
-	  const [code] = entry.fieldMeta.split('::');
+	  const [name] = entry.fieldMeta.split('::');
 	  return {
-		name: code,
+		name: name,
 		value: entry.value, 
 	  };
 	});
