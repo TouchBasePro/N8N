@@ -41,10 +41,10 @@ export class TouchBasePro implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'TouchBasePro',
 		name: 'touchBasePro',
-		icon: 'file:logo.svg',
+		icon: 'file:envelop.svg',
 		group: ['output'],
 		version: 1,
-		description: 'Interact with TouchBasePro API for Email and WhatsApp operations',
+		description: 'Interact with TouchBasePro API for Email, WhatsApp, and SMS operations',
 		subtitle: '={{$parameter["operation"] || "Select an Operation"}}',
 		defaults: {
 			name: 'TouchBasePro',
@@ -100,7 +100,7 @@ export class TouchBasePro implements INodeType {
 					{
 						name: 'Add Email(s) to Suppression List',
 						value: 'addToSuppressionList',
-						action: 'Add email s to suppression list',
+						action: 'Add emails to suppression list',
 					},
 				],
 				default: 'sendSmartEmail',
