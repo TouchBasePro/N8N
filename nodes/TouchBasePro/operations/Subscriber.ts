@@ -35,39 +35,6 @@ export async function getCustomFields(
 	return options;
 }
 
-export async function getSubscriberOptions(
-	this: ILoadOptionsFunctions,
-): Promise<INodePropertyOptions[]> {
-	const listId = this.getCurrentNodeParameter('listId') as string;
-	if (!listId) return [];
-	const options: INodePropertyOptions[] = [];
-	let page = 1;
-	const pageSize = 100;
-	let totalPages = 1;
-
-	do {
-		const response = await touchBaseRequest.call(
-			this,
-			'GET',
-			`/email/lists/${listId}/subscribers`,
-			{},
-			{ page, pageSize },
-		);
-		if (!Array.isArray(response.data)) break;
-		totalPages = response.totalPages || 1;
-
-		for (const sub of response.data as any[]) {
-			options.push({
-				name: `${sub.name || 'N/A'} <${sub.email}>`,
-				value: sub.email,
-			});
-		}
-		page++;
-	} while (page <= totalPages);
-
-	return options;
-}
-
 export async function addOrUpdateSubscriber(
 	this: IExecuteFunctions,
 	index: number,
@@ -81,13 +48,54 @@ export async function addOrUpdateSubscriber(
 
 	const customFieldsInput = cfCollection.field || [];
 
-	const customFields = customFieldsInput.map(entry => {
-	  const [name] = entry.fieldMeta.split('::');
-	  return {
-		name: name,
-		value: entry.value, 
-	  };
-	});
+	const customFields = customFieldsInput
+		.map(entry => {
+		  const [name] = entry.fieldMeta.split('::');
+		  // Convert comma-separated values to pipe-separated values for API compatibility
+		  let processedValue = entry.value;
+		  if (typeof processedValue === 'string' && processedValue.includes(',')) {
+		    processedValue = processedValue.split(',').map(v => v.trim()).filter(Boolean).join('|');
+		  }
+		  return {
+			name: name,
+			value: processedValue, 
+		  };
+		})
+		.filter(field => {
+		  // Filter out fields with empty values based on their type
+		  const value = field.value;
+		  
+		  // Handle undefined/null values
+		  if (value === undefined || value === null) return false;
+		  
+		  // Handle string values
+		  if (typeof value === 'string') {
+		    return value.trim() !== '';
+		  }
+		  
+		  // Handle number values (including 0, which is valid)
+		  if (typeof value === 'number') {
+		    return true; // All numbers are considered valid, including 0
+		  }
+		  
+		  // Handle boolean values
+		  if (typeof value === 'boolean') {
+		    return true; // Both true and false are considered valid
+		  }
+		  
+		  // Handle array values
+		  if (Array.isArray(value)) {
+		    return value.length > 0;
+		  }
+		  
+		  // Handle object values (non-null objects are considered valid)
+		  if (typeof value === 'object') {
+		    return Object.keys(value).length > 0;
+		  }
+		  
+		  // For any other type, consider it valid
+		  return true;
+		});
 
 	// 3) Build request body per operation
 	let body: IDataObject = {};
@@ -97,12 +105,17 @@ export async function addOrUpdateSubscriber(
 	if (operation === 'add') {
 		body = {
 			email: this.getNodeParameter('email', index) as string,
-			name: this.getNodeParameter('name', index) as string,
+			// name field removed as per client requirements
 			reSubscribe: this.getNodeParameter('reSubscribe', index) as boolean,
 			allowTracking: this.getNodeParameter('consentToTrack', index) as boolean, // keep param name for n8n, but send as allowTracking
 			status: this.getNodeParameter('status', index) as string,
-			customFields,
 		};
+		
+		// Only include customFields if there are fields with values
+		if (customFields.length > 0) {
+			body.customFields = customFields;
+		}
+		
 		endpoint = `/email/lists/${listId}/subscribers`;
 		method = 'POST';
 	} else {
@@ -114,13 +127,19 @@ export async function addOrUpdateSubscriber(
 				{ itemIndex: index },
 			);
 		}
+		
+		// For updates, only include fields that have values (optional fields)
+		// Note: name and email fields removed as per client requirements
 		body = {
-			email: this.getNodeParameter('email', index) as string,
-			name: this.getNodeParameter('name', index) as string,
 			reSubscribe: this.getNodeParameter('reSubscribe', index) as boolean,
 			allowTracking: this.getNodeParameter('consentToTrack', index) as boolean,
-			customFields,
 		};
+		
+		// Only include customFields if there are fields with values
+		if (customFields.length > 0) {
+			body.customFields = customFields;
+		}
+		
 		endpoint = `/email/lists/${listId}/subscribers/${encodeURIComponent(currentEmail)}`;
 		method = 'PUT';
 	}

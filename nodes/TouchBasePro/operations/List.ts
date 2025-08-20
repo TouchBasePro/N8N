@@ -53,19 +53,56 @@ export async function createList(
     multiSelect: 'MultiSelectMany',
   };
 
-  const fields = customFieldsInput.map((entry: any) => {
-    const field: any = {
-      "Name": entry.fieldName,
-      "Type": typeMap[entry.fieldType],
-      "IsRequired": entry.required,
-      "IsVisible": entry.visible,
-      "IsUniqueIdField": entry.uniqueId,
-    };
-    if (entry.fieldType === 'select' || entry.fieldType === 'multiSelect') {
-      field.options = (entry.options || '').split(',').map((o: string) => o.trim()).filter(Boolean);
-    }
-    return field;
-  });
+  const fields = customFieldsInput
+    .map((entry: any) => {
+      const field: any = {
+        "Name": entry.fieldName,
+        "Type": typeMap[entry.fieldType],
+        "IsRequired": entry.required,
+        "IsVisible": entry.visible,
+        "IsUniqueIdField": entry.uniqueId,
+      };
+      if (entry.fieldType === 'select' || entry.fieldType === 'multiSelect') {
+        field.options = (entry.options || '').split(',').map((o: string) => o.trim()).filter(Boolean);
+      }
+      return field;
+    })
+    .filter(field => {
+      // Filter out fields with empty names or invalid types
+      if (!field.Name || typeof field.Name !== 'string' || field.Name.trim() === '') return false;
+      if (!field.Type || typeof field.Type !== 'string' || field.Type.trim() === '') return false;
+      
+      // Additional validation for field options if they exist
+      if (field.options && Array.isArray(field.options)) {
+        // Filter out fields with empty options arrays
+        if (field.options.length === 0) return false;
+        
+        // Filter out options with empty values
+        field.options = field.options.filter((option: any) => {
+          if (typeof option === 'string') {
+            return option.trim() !== '';
+          }
+          if (typeof option === 'number') {
+            return true; // All numbers are valid, including 0
+          }
+          if (typeof option === 'boolean') {
+            return true; // Both true and false are valid
+          }
+          if (Array.isArray(option)) {
+            return option.length > 0;
+          }
+          if (typeof option === 'object' && option !== null) {
+            return Object.keys(option).length > 0;
+          }
+          return true;
+        });
+        
+        // If after filtering options, the array is empty, exclude the field
+        if (field.options.length === 0) return false;
+      }
+      
+      return true;
+    });
 
   // Enforce unique identifier rules
   let uniqueIdCount = 0;
@@ -93,8 +130,12 @@ export async function createList(
 
   const body: IDataObject = {
     name,
-    CustomFields: fields,
   };
+  
+  // Only include CustomFields if there are fields to send
+  if (fields.length > 0) {
+    body.CustomFields = fields;
+  }
 
   return await touchBaseRequest.call(this, 'POST', '/email/lists', body);
 }

@@ -17,7 +17,6 @@ import { createList } from './operations/List';
 import {
 	addOrUpdateSubscriber,
 	getCustomFields,
-	getSubscriberOptions,
 } from './operations/Subscriber';
 import { getListOptions } from './operations/List';
 import {
@@ -508,16 +507,12 @@ export class TouchBasePro implements INodeType {
 				},
 			},
 			{
-				displayName: 'Current Email Name or ID',
+				displayName: 'Current Email',
 				name: 'currentEmail',
-				type: 'options',
+				type: 'string',
 				description:
-					'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
-				typeOptions: {
-					loadOptionsMethod: 'getSubscriberOptions',
-					loadOptionsDependsOn: ['listId'],
-					searchable: true,
-				},
+					'Enter the email address of the subscriber you want to update',
+				placeholder: 'subscriber@example.com',
 				default: '',
 				required: true,
 				displayOptions: {
@@ -528,33 +523,52 @@ export class TouchBasePro implements INodeType {
 					},
 				},
 			},
-			{
-				displayName: 'New Email',
-				name: 'email',
-				type: 'string',
-				placeholder: 'name@email.com',
-				default: '',
-				displayOptions: {
-					show: {
-						resource: ['email'],
-						operation: ['addOrUpdateSubscriber'],
-						subOperation: ['update'],
-					},
-				},
-			},
-			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				default: '',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['email'],
-						operation: ['addOrUpdateSubscriber'],
-					},
-				},
-			},
+			// New Email field removed from update operation as per client requirements
+			// {
+			// 	displayName: 'New Email (Optional)',
+			// 	name: 'email',
+			// 	type: 'string',
+			// 	placeholder: 'name@email.com',
+			// 	default: '',
+			// 	description: 'Leave empty to keep the current email address unchanged',
+			// 	displayOptions: {
+			// 		show: {
+			// 			resource: ['email'],
+			// 			operation: ['addOrUpdateSubscriber'],
+			// 			subOperation: ['update'],
+			// 		},
+			// 	},
+			// },
+			// Name field removed as per client requirements
+			// {
+			// 	displayName: 'Name',
+			// 	name: 'name',
+			// 	type: 'string',
+			// 	default: '',
+			// 	required: true,
+			// 	description: 'Required for new subscribers',
+			// 	displayOptions: {
+			// 		show: {
+			// 			resource: ['email'],
+			// 			operation: ['addOrUpdateSubscriber'],
+			// 			subOperation: ['add'],
+			// 		},
+			// 	},
+			// },
+			// {
+			// 	displayName: 'Name (Optional)',
+			// 	name: 'name',
+			// 	type: 'string',
+			// 	default: '',
+			// 	description: 'Leave empty to keep the current name unchanged',
+			// 	displayOptions: {
+			// 		show: {
+			// 			resource: ['email'],
+			// 			operation: ['addOrUpdateSubscriber'],
+			// 			subOperation: ['update'],
+			// 		},
+			// 	},
+			// },
 			{
 				displayName: 'Re‑subscribe',
 				name: 'reSubscribe',
@@ -699,18 +713,40 @@ export class TouchBasePro implements INodeType {
 				},
 			},
 			{
-				displayName: 'Message Type',
-				name: 'messageType',
+				displayName: 'Message Category',
+				name: 'messageCategory',
 				type: 'options',
 				options: [
-					{ name: 'Text Message', value: 'text' },
-					{ name: 'Template Message', value: 'template' },
+					{ name: 'Simple Messages', value: 'simple' },
+					{ name: 'Template Messages', value: 'template' },
 				],
-				default: 'template',
+				default: 'simple',
 				displayOptions: {
 					show: {
 						resource: ['whatsapp'],
 						operation: ['sendWhatsAppMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Message Type',
+				name: 'messageType',
+				type: 'options',
+				options: [
+					{ name: 'Audio Message', value: 'audio' },
+					{ name: 'Button Message', value: 'button' },
+					{ name: 'Document Message', value: 'document' },
+					{ name: 'Image Message', value: 'image' },
+					{ name: 'List Message', value: 'list' },
+					{ name: 'Text Message', value: 'text' },
+					{ name: 'Video Message', value: 'video' },
+				],
+				default: 'text',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['simple'],
 					},
 				},
 			},
@@ -728,7 +764,220 @@ export class TouchBasePro implements INodeType {
 					show: {
 						resource: ['whatsapp'],
 						operation: ['sendWhatsAppMessage'],
-						messageType: ['text'],
+						messageCategory: ['simple'],
+						messageType: ['text', 'audio', 'image', 'document', 'video'],
+					},
+				},
+			},
+			// Media fields for audio, image, document, and video messages
+			{
+				displayName: 'Media URL',
+				name: 'mediaUrl',
+				type: 'string',
+				default: '',
+				required: true,
+				description: 'URL of the media file to send',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['simple'],
+						messageType: ['audio', 'image', 'document', 'video'],
+					},
+				},
+			},
+			{
+				displayName: 'File Name',
+				name: 'fileName',
+				type: 'string',
+				default: '',
+				description: 'Name of the file (required for audio and video)',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['simple'],
+						messageType: ['audio', 'video'],
+					},
+				},
+			},
+			// Button message fields
+			{
+				displayName: 'Button Message',
+				name: 'buttonMessage',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: false },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['simple'],
+						messageType: ['button'],
+					},
+				},
+				options: [
+					{
+						name: 'buttonConfig',
+						displayName: 'Button Configuration',
+						values: [
+							{
+								displayName: 'Message Text',
+								name: 'messageText',
+								type: 'string',
+								default: 'Hello, please give your feedback.',
+								description: 'The main message text to display above the buttons',
+							},
+							{
+								displayName: 'Buttons',
+								name: 'buttons',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'button',
+										displayName: 'Button',
+										values: [
+											{
+												displayName: 'Button ID',
+												name: 'buttonId',
+												type: 'string',
+												default: '',
+												description: 'Unique identifier for the button',
+											},
+											{
+												displayName: 'Button Title',
+												name: 'buttonTitle',
+												type: 'string',
+												default: '',
+												description: 'Text to display on the button',
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			// List message fields
+			{
+				displayName: 'List Message',
+				name: 'listMessage',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: false },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['simple'],
+						messageType: ['list'],
+					},
+				},
+				options: [
+					{
+						name: 'listConfig',
+						displayName: 'List Configuration',
+						values: [
+							{
+								displayName: 'Message Text',
+								name: 'messageText',
+								type: 'string',
+								default: 'Check out our top product collections below!',
+								description: 'The main message text to display above the list',
+							},
+							{
+								displayName: 'Button Text',
+								name: 'buttonText',
+								type: 'string',
+								default: 'View Collections',
+								description: 'Text to display on the main button',
+							},
+							{
+								displayName: 'Sections',
+								name: 'sections',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'section',
+										displayName: 'Section',
+										values: [
+											{
+												displayName: 'Section Title',
+												name: 'sectionTitle',
+												type: 'string',
+												default: '',
+												description: 'Title of the section',
+											},
+											{
+												displayName: 'Rows',
+												name: 'rows',
+												type: 'fixedCollection',
+												typeOptions: { multipleValues: true },
+												default: {},
+												options: [
+													{
+														name: 'row',
+														displayName: 'Row',
+														values: [
+															{
+																displayName: 'Row ID',
+																name: 'rowId',
+																type: 'string',
+																default: '',
+																description: 'Unique identifier for the row',
+															},
+															{
+																displayName: 'Row Title',
+																name: 'rowTitle',
+																type: 'string',
+																default: '',
+																description: 'Title of the row',
+															},
+															{
+																displayName: 'Row Description',
+																name: 'rowDescription',
+																type: 'string',
+																default: '',
+																description: 'Description of the row',
+															},
+														],
+													},
+												],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			{
+				displayName: 'Template Type',
+				name: 'templateType',
+				type: 'options',
+				options: [
+					{ name: 'Authentication Template', value: 'authentication' },
+					{ name: 'Basic Template (No Header)', value: 'basic' },
+					{ name: 'Document Header Template', value: 'documentHeader' },
+					{ name: 'Dynamic CTA Template', value: 'dynamicCTA' },
+					{ name: 'Image Header Template', value: 'imageHeader' },
+					{ name: 'Order Details Carousel', value: 'orderCarousel' },
+					{ name: 'Order Details Single Image', value: 'orderSingleImage' },
+					{ name: 'Order Status Template', value: 'orderStatus' },
+					{ name: 'Text Header Template', value: 'textHeader' },
+				],
+				default: 'basic',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
 					},
 				},
 			},
@@ -748,9 +997,528 @@ export class TouchBasePro implements INodeType {
 					show: {
 						resource: ['whatsapp'],
 						operation: ['sendWhatsAppMessage'],
-						messageType: ['template'],
+						messageCategory: ['template'],
 					},
 				},
+			},
+			// Header values for templates that support headers
+			{
+				displayName: 'Header Values',
+				name: 'headerValues',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['textHeader', 'documentHeader', 'imageHeader', 'orderSingleImage'],
+					},
+				},
+				options: [
+					{
+						name: 'headerValue',
+						displayName: 'Header Value',
+						values: [
+							{
+								displayName: 'Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'Header variable value (text, media URL, etc.)',
+							},
+						],
+					},
+				],
+			},
+			// File name for document header templates
+			{
+				displayName: 'File Name',
+				name: 'templateFileName',
+				type: 'string',
+				default: '',
+				description: 'File name for document header templates',
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['documentHeader'],
+					},
+				},
+			},
+			// Button values for authentication and dynamic CTA templates
+			{
+				displayName: 'Button Values',
+				name: 'buttonValues',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['authentication', 'dynamicCTA'],
+					},
+				},
+				options: [
+					{
+						name: 'buttonValue',
+						displayName: 'Button Value',
+						values: [
+							{
+								displayName: 'Button Index',
+								name: 'buttonIndex',
+								type: 'string',
+								default: '0',
+								description: 'Button index (0, 1, 2, etc.)',
+							},
+							{
+								displayName: 'Button Values',
+								name: 'values',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'value',
+										displayName: 'Value',
+										values: [
+											{
+												displayName: 'Value',
+												name: 'value',
+												type: 'string',
+												default: '',
+												description: 'Button variable value',
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			// Carousel cards for order carousel templates
+			{
+				displayName: 'Carousel Cards',
+				name: 'carouselCards',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['orderCarousel'],
+					},
+				},
+				options: [
+					{
+						name: 'card',
+						displayName: 'Carousel Card',
+						values: [
+							{
+								displayName: 'Header Values',
+								name: 'cardHeaderValues',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'headerValue',
+										displayName: 'Header Value',
+										values: [
+											{
+												displayName: 'Value',
+												name: 'value',
+												type: 'string',
+												default: '',
+												description: 'Card header value (usually media URL)',
+											},
+										],
+									},
+								],
+							},
+							{
+								displayName: 'Body Values',
+								name: 'cardBodyValues',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'bodyValue',
+										displayName: 'Body Value',
+										values: [
+											{
+												displayName: 'Value',
+												name: 'value',
+												type: 'string',
+												default: '',
+												description: 'Card body value',
+											},
+										],
+									},
+								],
+							},
+							{
+								displayName: 'Button Values',
+								name: 'cardButtonValues',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'buttonValue',
+										displayName: 'Button Value',
+										values: [
+											{
+												displayName: 'Button Index',
+												name: 'buttonIndex',
+												type: 'string',
+												default: '0',
+											},
+											{
+												displayName: 'Button Values',
+												name: 'values',
+												type: 'fixedCollection',
+												typeOptions: { multipleValues: true },
+												default: {},
+												options: [
+													{
+														name: 'value',
+														displayName: 'Value',
+														values: [
+															{
+																displayName: 'Value',
+																name: 'value',
+																type: 'string',
+																default: '',
+																description: 'Button variable value',
+															},
+														],
+													},
+												],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			// Order details for order-related templates
+			{
+				displayName: 'Order Details',
+				name: 'orderDetails',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: true },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['orderCarousel', 'orderSingleImage'],
+					},
+				},
+				options: [
+					{
+						name: 'order',
+						displayName: 'Order',
+						values: [
+							{
+								displayName: 'Reference ID',
+								name: 'referenceId',
+								type: 'string',
+								default: '',
+								required: true,
+								description: 'Unique reference ID for the order',
+							},
+							{
+								displayName: 'Order Items',
+								name: 'orderItems',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: true },
+								default: {},
+								options: [
+									{
+										name: 'item',
+										displayName: 'Order Item',
+										values: [
+											{
+												displayName: 'Item Name',
+												name: 'itemName',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'Quantity',
+												name: 'quantity',
+												type: 'number',
+												default: 1,
+												required: true,
+											},
+											{
+												displayName: 'Amount',
+												name: 'amount',
+												type: 'number',
+												default: 0,
+												required: true,
+											},
+											{
+												displayName: 'Country of Origin',
+												name: 'countryOfOrigin',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+										],
+									},
+								],
+							},
+							{
+								displayName: 'Shipping Address',
+								name: 'shippingAddress',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: false },
+								default: {},
+								options: [
+									{
+										name: 'address',
+										displayName: 'Address',
+										values: [
+											{
+												displayName: 'Name',
+												name: 'name',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'Phone Number',
+												name: 'phoneNumber',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'Address',
+												name: 'address',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'City',
+												name: 'city',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'State',
+												name: 'state',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'PIN Code',
+												name: 'pinCode',
+												type: 'string',
+												default: '',
+												required: true,
+											},
+											{
+												displayName: 'House Number',
+												name: 'houseNumber',
+												type: 'string',
+												default: '',
+											},
+											{
+												displayName: 'Tower Number',
+												name: 'towerNumber',
+												type: 'string',
+												default: '',
+											},
+											{
+												displayName: 'Building Name',
+												name: 'buildingName',
+												type: 'string',
+												default: '',
+											},
+											{
+												displayName: 'Landmark/Area',
+												name: 'landmarkArea',
+												type: 'string',
+												default: '',
+											},
+											{
+												displayName: 'Country',
+												name: 'country',
+												type: 'string',
+												default: 'IN',
+											},
+										],
+									},
+								],
+							},
+							{
+								displayName: 'Order Summary',
+								name: 'orderSummary',
+								type: 'fixedCollection',
+								typeOptions: { multipleValues: false },
+								default: {},
+								options: [
+									{
+										name: 'summary',
+										displayName: 'Summary',
+										values: [
+											{
+												displayName: 'Currency',
+												name: 'currency',
+												type: 'string',
+												default: 'INR',
+											},
+											{
+												displayName: 'Discount',
+												name: 'discount',
+												type: 'number',
+												default: 0,
+											},
+											{
+												displayName: 'Payment Expiry',
+												name: 'paymentExpiry',
+												type: 'fixedCollection',
+												typeOptions: { multipleValues: false },
+												default: {},
+												options: [
+													{
+														name: 'expiry',
+														displayName: 'Expiry',
+														values: [
+															{
+																displayName: 'Value',
+																name: 'value',
+																type: 'number',
+																default: 15,
+																required: true,
+															},
+															{
+																displayName: 'Unit',
+																name: 'unit',
+																type: 'options',
+																options: [
+																	{ name: 'Minutes', value: 'minutes' },
+																	{ name: 'Hours', value: 'hours' },
+																	{ name: 'Days', value: 'days' },
+																],
+																default: 'minutes',
+																required: true,
+															},
+															{
+																displayName: 'Expiration Message',
+																name: 'expirationMessage',
+																type: 'string',
+																default: '',
+															},
+														],
+													},
+												],
+											},
+											{
+												displayName: 'Shipping',
+												name: 'shipping',
+												type: 'number',
+												default: 0,
+											},
+											{
+												displayName: 'Subtotal',
+												name: 'subtotal',
+												type: 'number',
+												default: 0,
+												required: true,
+											},
+											{
+												displayName: 'Tax',
+												name: 'tax',
+												type: 'number',
+												default: 0,
+											},
+											{
+												displayName: 'Total Amount',
+												name: 'totalAmount',
+												type: 'number',
+												default: 0,
+												required: true,
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			// Order status for order status templates
+			{
+				displayName: 'Order Status',
+				name: 'orderStatus',
+				type: 'fixedCollection',
+				typeOptions: { multipleValues: false },
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['whatsapp'],
+						operation: ['sendWhatsAppMessage'],
+						messageCategory: ['template'],
+						templateType: ['orderStatus'],
+					},
+				},
+				options: [
+					{
+						name: 'status',
+						displayName: 'Status',
+						values: [
+							{
+								displayName: 'Reference ID',
+								name: 'referenceId',
+								type: 'string',
+								default: '',
+								required: true,
+								description: 'Reference ID for the order',
+							},
+							{
+								displayName: 'Order Status',
+								name: 'status',
+								type: 'options',
+								options: [
+									{ name: 'Cancelled', value: 'canceled' },
+									{ name: 'Confirmed', value: 'confirmed' },
+									{ name: 'Delivered', value: 'delivered' },
+									{ name: 'Failed', value: 'failed' },
+									{ name: 'Processing', value: 'processing' },
+									{ name: 'Shipped', value: 'shipped' },
+								],
+								default: 'confirmed',
+								required: true,
+							},
+							{
+								displayName: 'Status Description',
+								name: 'description',
+								type: 'string',
+								default: '',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'Template Language Name or ID',
@@ -765,7 +1533,7 @@ export class TouchBasePro implements INodeType {
 					show: {
 						resource: ['whatsapp'],
 						operation: ['sendWhatsAppMessage'],
-						messageType: ['template'],
+						messageCategory: ['template'],
 					},
 				},
 			},
@@ -778,7 +1546,7 @@ export class TouchBasePro implements INodeType {
 					show: {
 						resource: ['whatsapp'],
 						operation: ['sendWhatsAppMessage'],
-						messageType: ['template'],
+						messageCategory: ['template'],
 					},
 				},
 				default: {},
@@ -903,18 +1671,17 @@ export class TouchBasePro implements INodeType {
 		return [returnData];
 	}
 
-	methods = {
-		loadOptions: {
-			getSmartEmailOptions,
-			getMergeFieldOptions,
-			getListOptions,
-			getCustomFields,
-			getSubscriberOptions,
-			getSuppressionListOptions,
-			getSuppressionEmailsOptions,
-			getWhatsAppTemplateOptions,
-			getTemplateLanguageOptions,
-			getTemplateVariableOptions,
-		},
-	};
+		methods = {
+			loadOptions: {
+				getSmartEmailOptions,
+				getMergeFieldOptions,
+				getListOptions,
+				getCustomFields,
+				getSuppressionListOptions,
+				getSuppressionEmailsOptions,
+				getWhatsAppTemplateOptions,
+				getTemplateLanguageOptions,
+				getTemplateVariableOptions,
+			},
+		};
 }
